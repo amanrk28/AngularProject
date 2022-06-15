@@ -1,0 +1,56 @@
+<div class="mail">
+    <h2>Input Credit Card Details</h2>
+    <ul>
+        <li>
+            <h4>CARD HOLDER NAME</h4>
+            <input type='text' id='text3' name='text3' ng-model="text3" autocomplete="off">
+        </li>
+        <li>
+            <h4>CARD NUMBER</h4>
+            <input type='text' id='text1' name='text1' placeholder="0000000000000000" ng-model="text1" maxlength="16" autocomplete="off">
+        </li>
+        <li>
+            <h4 id='dom'>CVV</h4>
+            <input type='text' id='text2' name='text2' placeholder="XXX" ng-model="text2" maxlength="3" autocomplete="off">
+        </li>
+    </ul>
+    <h4>Expiration Date</h2>
+    <ul>
+        <select id="expiryMonth" name='expiryMonth' ng-model="expiryMonth">
+            <option value="" disabled selected> Month </option>
+            <option>01</option>
+            <option>02</option>
+            <option>03</option>
+            <option>04</option>
+            <option>05</option>
+            <option>06</option>
+            <option>07</option>
+            <option>08</option>
+            <option>09</option>
+            <option>10</option>
+            <option>11</option>
+            <option>12</option>
+        </select>
+        <select id="expiryYear" name='expiryYear' ng-model="expiryYear">
+            <option value="" disabled selected>Year</option>
+            <option>2018</option>
+            <option>2019</option>
+            <option>2020</option>
+            <option>2021</option>
+            <option>2022</option>
+            <option>2023</option>
+            <option>2024</option>
+            <option>2025</option>
+            <option>2026</option>
+            <option>2027</option>
+            <option>2028</option>
+            <option>2029</option>
+            <option>2030</option>
+        </select>
+    </ul>
+    <ul>
+    <li class="submit">
+        <button type="submit" ng-click="save()">Submit</button>
+    </li>
+    </ul>
+</div>

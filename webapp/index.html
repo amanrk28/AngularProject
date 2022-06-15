@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500&display=swap" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular-route.min.js"></script>
+    <link rel="stylesheet" href="form-styles.css">
+    <title>MENU</title>
+    <script src="https://kit.fontawesome.com/65f53714a6.js" crossorigin="anonymous"></script>
+    <script>
+        var app = angular.module('myApp', ['ngRoute']);
+        app.config(function ($routeProvider) {
+            $routeProvider
+                .when('/', {
+                    templateUrl: 'validation.html',
+                    controller: 'FirstController'
+                })
+                .when('/second', {
+                    templateUrl: 'list.html', controller: 'transactionController'
+                })
+                .otherwise({ redirectTo: '/' });
+        });
+        app.controller('FirstController', function ($scope, $http) {
+            $scope.save = function () {
+                if (!$scope.validate()) {
+                    return;
+                }
+                var result = {
+                    "CardNumber": $scope.text1, "Name": $scope.text3,
+                    "CVV": $scope.text2, "Month": $scope.expiryMonth, "Year": $scope.expiryYear
+                };
+                $http.put("transaction", result).then(function successCallback(response) {
+                    $scope.transactions = response.data;
+                    $scope.text1 = null;
+                    $scope.text2 = null;
+                    $scope.text3 = null;
+                    $scope.expiryMonth = null;
+                    $scope.expiryYear = null;
+                },
+                    function errorCallback(response) {
+                        console.log("Unable to perform get request");
+                    }
+                );
+            };
+            $scope.validate = function () {
+                var isValid = true;
+                var form = document.getElementById('form1');
+                var cc = document.getElementById('text1');
+                var cvv1 = document.getElementById('text2');
+                var name1 = document.getElementById('text3');
+                var expiryMonth = document.getElementById('expiryMonth');
+                var expiryYear = document.getElementById('expiryYear');
+                var letters = /^[A-Za-z ]+$/;
+                if (name1.value.match(letters)) { }
+                else {
+                    alert("Enter name with alphabets alone ");
+                    isValid = false;
+                }
+                if (cc.value == "" || cc.value == null) {
+                    alert("Please enter card number");
+                    isValid = false;
+                }
+                if (cvv1.value == "" || cvv1.value == null) {
+                    alert("Please enter CVV");
+                    isValid = false;
+                }
+                if (name1.value == "" || name1.value == null) {
+                    alert("Please enter valid Card holder name");
+                    isValid = false;
+                }
+
+                var month = expiryMonth.value;
+                var year = expiryYear.value;
+                var d = new Date();
+                if (year < d.getFullYear() || (year === d.getFullYear() && month < d.getMonth())) {
+                    alert("Expired card");
+                    isValid = false;
+                }
+                return isValid;
+            }
+        });
+        app.controller('transactionController', function ($scope, $http) {
+            $scope.message = 'Hello from SecondController';
+            $scope.getRequest = function () {
+                $http.get("transaction").then(
+                    function successCallback(response) {
+                        $scope.transactions = response.data;
+                    },
+                    function errorCallback(response) {
+                        console.log("Unable to perform get request");
+                    }
+                );
+            };
+            $scope.deleteTransaction = function (CVV) {
+                $http.delete("transaction",
+                    {
+                        params: { CVV }
+                    }).success(function (data) {
+                        alert("Transaction Delete Successfully!");
+                        $scope.getRequest();
+                    });
+            };
+        });
+    </script>
+</head>
+
+<body ng-app="myApp">
+    <center>
+        <nav class="{{active}}">
+            <a href="#/" class="" ng-click="active='paris'" style="font-family: Futura;">PAYMENT</a>
+            <a href="#/second" class="" ng-click="getRequest() " style="font-family: Futura;">TRANSACTIONS</a>
+        </nav>
+    </center>
+    <ng-view></ng-view>
+</body>
+
+</html>

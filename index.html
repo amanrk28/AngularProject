@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Gate Pass Application</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500&display=swap" rel="stylesheet">
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular-animate.js"></script>
+    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        label {
+            text-shadow: 0px 0px 0px black;
+            color: white;
+        }
+
+        .tableHeader {
+            border-bottom: 1px solid #333;
+        }
+
+        .approved {
+            background-color: #ccc !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="containers">
+        <div ng-app='myApp' ng-controller='myController' ng-init='loadTable()'>
+            <h3>Gate Pass Application</h3>
+            <form class='withForm'>
+                <div style="display: flex; flex-direction:column; align-items: center;">
+                    <div class="groupedFormItem">
+
+                        <div class="formItem">
+                            <label for="name">Name</label>
+                            <input type="hidden" ng-model='_id'>
+                            <input type="text" id="name" ng-model='name' class='form-control'>
+                        </div>
+                        <div class="formItem">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" ng-model='email' class='form-control'>
+                        </div>
+                    </div>
+                    <div class="groupedFormItem">
+                        <div class="formItem">
+                            <label for="phone">Phone</label>
+                            <input type="text" id="phone" ng-model='phone' class='form-control' maxlength="10">
+                        </div>
+                        <div class="formItem">
+                            <label for="email">Hostel & Room</label>
+                            <input type="text" id="hostel" ng-model='hostel' class='form-control'>
+                        </div>
+                    </div>
+                    <div class="groupedFormItem">
+                        <div class="formItem">
+                            <label for="from">From</label>
+                            <input type="datetime-local" id="from" ng-model='from' class='form-control'>
+                        </div>
+                        <div class="formItem">
+                            <label for="to">To</label>
+                            <input type="datetime-local" id="to" ng-model='to' class='form-control'>
+                        </div>
+                    </div>
+                    <button type="submit" class='btn btn-success' ng-click='insertIntoDB()'>
+                        {{btname | uppercase}}
+                    </button>
+                </div>
+            </form>
+            <h3>REQUESTS</h3>
+            <div class='tableHolder'>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th class="tableHeader">Name</th>
+                            <th class="tableHeader">Email</th>
+                            <th class="tableHeader">Phone</th>
+                            <th class="tableHeader">Hostel</th>
+                            <th class="tableHeader">From</th>
+                            <th class="tableHeader">To</th>
+                            <th class="tableHeader">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat='x in JSONValues | reverse track by $index'
+                            class="{{x.isApproved ? 'approved': 'unapproved'}}">
+                            <th>{{x.name}}</th>
+                            <th>{{x.email}}</th>
+                            <th>{{x.phone}}</th>
+                            <th>{{x.hostel}}</th>
+                            <th>{{x.from | date : "dd/MM/yy - hh:mm a" }}</th>
+                            <th>{{x.to | date : "dd/MM/yy - hh:mm a"}}</th>
+                            <th>
+                                <button class='btn btn-primary'
+                                    ng-click='updateDB(x._id,x.name,x.email,x.phone,x.hostel,x.from,x.to)'
+                                    ng-disabled="{{x.isApproved}}">Update</button>
+                                <button class='btn btn-danger' ng-click='approveDB(x._id, x.name)'
+                                    ng-disabled="{{x.isApproved}}">Approve</button>
+                            </th>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script>
+        var app = angular.module("myApp", ["ngAnimate"]);
+        app.filter('reverse', function () {
+            return function (items) {
+                return items.slice().reverse();
+            };
+        });
+        app.controller("myController", function ($scope, $http) {
+            $scope.btname = "add";
+            $scope.loadTable = function () {
+                $http.get("bookings").then(function successCallback(response) {
+                    $scope.JSONValues = response.data;
+                }, function errorCallback(error) {
+                    console.log("Unable to perform get request");
+                })
+            };
+
+            $scope.reset = function () {
+                $scope._id = null;
+                $scope.name = null;
+                $scope.email = null;
+                $scope.phone = null;
+                $scope.hostel = null;
+                $scope.from = null;
+                $scope.to = null;
+                $scope.btname = "add";
+            }
+
+            $scope.insertIntoDB = function () {
+                if ($scope.name == null) {
+                    alert("Enter Name");
+                    return;
+                } else if ($scope.email == null) {
+                    alert("Enter Email");
+                    return;
+                } else if ($scope.phone == null) {
+                    alert("Enter Phone");
+                    return;
+                } else if ($scope.from == null || $scope.to == null) {
+                    alert("Enter Date and time for From & To");
+                    return;
+                }
+                const data = {
+                    _id: $scope._id,
+                    name: $scope.name,
+                    email: $scope.email,
+                    phone: $scope.phone,
+                    hostel: $scope.hostel,
+                    from: $scope.from,
+                    to: $scope.to,
+                    isApproved: false,
+                };
+
+                if ($scope.btname === "update") {
+                    $http.put("bookings", data).then((response) => {
+                        $scope.reset();
+                        $scope.loadTable();
+                        alert("Request Updated");
+                    }, (err) => {
+                        console.log("Unable to update data in DB");
+                    })
+                } else {
+                    $http.post("bookings", data).then((response) => {
+                        $scope.reset();
+                        $scope.loadTable();
+                        alert("Request Confirmed");
+                    }, (err) => {
+                        console.log("Unable to add data in DB");
+                    })
+                }
+            };
+
+            $scope.updateDB = function (_id, name, email, phone, hostel, from, to) {
+                $scope._id = _id;
+                $scope.name = name;
+                $scope.email = email;
+                $scope.phone = phone;
+                $scope.hostel = hostel;
+                $scope.from = new Date(from);
+                $scope.to = new Date(to);
+                $scope.btname = "update";
+                console.log($scope.from);
+            };
+
+            $scope.approveDB = function (_id, name) {
+                if (confirm(`Approve request of ${name}?`) === true) {
+                    const data = { isApproved: true, _id }
+                    $http.put("bookings", data).then((data) => {
+                        $scope.loadTable();
+                        alert("Request Approved");
+                    }, (err) => {
+                        console.log("Unable to Approve data");
+                    })
+                }
+            };
+        });
+    </script>
+</body>
+
+</html>
